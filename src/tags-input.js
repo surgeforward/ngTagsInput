@@ -104,15 +104,7 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
             events.trigger('tag-removed', { $tag: tag });
             return tag;
         };
-
-        if (onTagRemoving({ $tag: tag })) {
-            self.items.splice(index, 1);
-            self.clearSelection();
-            events.trigger('tag-removed', { $tag: tag });
-            return tag;
-        }
-
-
+      
         self.select = function (index) {
             if (index < 0) {
                 index = self.items.length - 1;
