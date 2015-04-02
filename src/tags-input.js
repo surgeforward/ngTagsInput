@@ -31,7 +31,6 @@
  * @param {string=} [pasteSplitPattern=,] Regular expression used to split the pasted text into tags.
  * @param {boolean=} [replaceSpacesWithDashes=true] Flag indicating that spaces will be replaced with dashes.
  * @param {string=} [allowedTagsPattern=.+] Regular expression that determines whether a new tag is valid.
-<<<<<<< HEAD
  * @param {boolean=} [enableEditingLastTag=false] Flag indicating that the last tag will be moved back into the new tag
  *    input box instead of being removed when the backspace key is pressed and the input box is empty.
  * @param {boolean=} [addFromAutocompleteOnly=false] Flag indicating that only tags coming from the autocomplete list
@@ -45,17 +44,7 @@
  *    is available as $tag. This method must return either true or false. If false, the tag will not be removed.
  * @param {expression=} [onTagRemoved=NA] Expression to evaluate upon removing an existing tag. The removed tag is
  *    available as $tag.
-=======
- * @param {boolean=} [enableEditingLastTag=false] Flag indicating that the last tag will be moved back into
- *                                                the new tag input box instead of being removed when the backspace key
- *                                                is pressed and the input box is empty.
- * @param {boolean=} [addFromAutocompleteOnly=false] Flag indicating that only tags coming from the autocomplete list will be allowed.
- *                                                   When this flag is true, addOnEnter, addOnComma, addOnSpace, addOnBlur and
- *                                                   allowLeftoverText values are ignored.
- * @param {expression} onTagAdded Expression to evaluate upon adding a new tag. The new tag is available as $tag.
- * @param {expression} onTagRemoved Expression to evaluate upon removing an existing tag. The removed tag is available as $tag.
  * @param {expression} onTagClicked Expression to evaluate upon clicking an existing tag. The clicked tag is available as $tag.
->>>>>>> 1b00e00bfe55487166f9a786dd275e6eac9d8526
  */
 tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInputConfig, tiUtil) {
     function TagList(options, events, onTagAdding, onTagRemoving) {
