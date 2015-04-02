@@ -31,6 +31,7 @@
  * @param {string=} [pasteSplitPattern=,] Regular expression used to split the pasted text into tags.
  * @param {boolean=} [replaceSpacesWithDashes=true] Flag indicating that spaces will be replaced with dashes.
  * @param {string=} [allowedTagsPattern=.+] Regular expression that determines whether a new tag is valid.
+<<<<<<< HEAD
  * @param {boolean=} [enableEditingLastTag=false] Flag indicating that the last tag will be moved back into the new tag
  *    input box instead of being removed when the backspace key is pressed and the input box is empty.
  * @param {boolean=} [addFromAutocompleteOnly=false] Flag indicating that only tags coming from the autocomplete list
@@ -44,20 +45,31 @@
  *    is available as $tag. This method must return either true or false. If false, the tag will not be removed.
  * @param {expression=} [onTagRemoved=NA] Expression to evaluate upon removing an existing tag. The removed tag is
  *    available as $tag.
+=======
+ * @param {boolean=} [enableEditingLastTag=false] Flag indicating that the last tag will be moved back into
+ *                                                the new tag input box instead of being removed when the backspace key
+ *                                                is pressed and the input box is empty.
+ * @param {boolean=} [addFromAutocompleteOnly=false] Flag indicating that only tags coming from the autocomplete list will be allowed.
+ *                                                   When this flag is true, addOnEnter, addOnComma, addOnSpace, addOnBlur and
+ *                                                   allowLeftoverText values are ignored.
+ * @param {expression} onTagAdded Expression to evaluate upon adding a new tag. The new tag is available as $tag.
+ * @param {expression} onTagRemoved Expression to evaluate upon removing an existing tag. The removed tag is available as $tag.
+ * @param {expression} onTagClicked Expression to evaluate upon clicking an existing tag. The clicked tag is available as $tag.
+>>>>>>> 1b00e00bfe55487166f9a786dd275e6eac9d8526
  */
-tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInputConfig, tiUtil) {
+tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInputConfig, tiUtil) {
     function TagList(options, events, onTagAdding, onTagRemoving) {
         var self = {}, getTagText, setTagText, tagIsValid;
 
-        getTagText = function(tag) {
+        getTagText = function (tag) {
             return tiUtil.safeToString(tag[options.displayProperty]);
         };
 
-        setTagText = function(tag, text) {
+        setTagText = function (tag, text) {
             tag[options.displayProperty] = text;
         };
 
-        tagIsValid = function(tag) {
+        tagIsValid = function (tag) {
             var tagText = getTagText(tag);
 
             return tagText &&
@@ -70,13 +82,13 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
 
         self.items = [];
 
-        self.addText = function(text) {
+        self.addText = function (text) {
             var tag = {};
             setTagText(tag, text);
             return self.add(tag);
         };
 
-        self.add = function(tag) {
+        self.add = function (tag) {
             var tagText = getTagText(tag);
 
             if (options.replaceSpacesWithDashes) {
@@ -96,18 +108,23 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
             return tag;
         };
 
-        self.remove = function(index) {
-            var tag = self.items[index];
 
-            if (onTagRemoving({ $tag: tag }))  {
-                self.items.splice(index, 1);
-                self.clearSelection();
-                events.trigger('tag-removed', { $tag: tag });
-                return tag;
-            }
+        self.remove = function (index, event) {
+            if (event) { event.stopPropagation(); }
+            var tag = self.items.splice(index, 1)[0];
+            events.trigger('tag-removed', { $tag: tag });
+            return tag;
         };
 
-        self.select = function(index) {
+        if (onTagRemoving({ $tag: tag })) {
+            self.items.splice(index, 1);
+            self.clearSelection();
+            events.trigger('tag-removed', { $tag: tag });
+            return tag;
+        }
+
+
+        self.select = function (index) {
             if (index < 0) {
                 index = self.items.length - 1;
             }
@@ -119,24 +136,28 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
             self.selected = self.items[index];
         };
 
-        self.selectPrior = function() {
+        self.selectPrior = function () {
             self.select(--self.index);
         };
 
-        self.selectNext = function() {
+        self.selectNext = function () {
             self.select(++self.index);
         };
 
-        self.removeSelected = function() {
+        self.removeSelected = function () {
             return self.remove(self.index);
         };
 
-        self.clearSelection = function() {
+        self.clearSelection = function () {
             self.selected = null;
             self.index = -1;
         };
 
         self.clearSelection();
+        self.tagClick = function (index) {
+            var tag = self.items[index];
+            events.trigger('tag-clicked', { $tag: tag });
+        };
 
         return self;
     }
@@ -154,12 +175,13 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
             onTagAdded: '&',
             onInvalidTag: '&',
             onTagRemoving: '&',
-            onTagRemoved: '&'
+            onTagRemoved: '&',
+            onTagClicked: '&'
         },
         replace: false,
         transclude: true,
         templateUrl: 'ngTagsInput/tags-input.html',
-        controller: function($scope, $attrs, $element) {
+        controller: function ($scope, $attrs, $element) {
             $scope.events = tiUtil.simplePubSub();
 
             tagsInputConfig.load('tagsInput', $scope, $attrs, {
@@ -192,38 +214,38 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                 tiUtil.handleUndefinedResult($scope.onTagAdding, true),
                 tiUtil.handleUndefinedResult($scope.onTagRemoving, true));
 
-            this.registerAutocomplete = function() {
+            this.registerAutocomplete = function () {
                 var input = $element.find('input');
 
                 return {
-                    addTag: function(tag) {
+                    addTag: function (tag) {
                         return $scope.tagList.add(tag);
                     },
-                    focusInput: function() {
+                    focusInput: function () {
                         input[0].focus();
                     },
-                    getTags: function() {
+                    getTags: function () {
                         return $scope.tags;
                     },
-                    getCurrentTagText: function() {
+                    getCurrentTagText: function () {
                         return $scope.newTag.text;
                     },
-                    getOptions: function() {
+                    getOptions: function () {
                         return $scope.options;
                     },
-                    on: function(name, handler) {
+                    on: function (name, handler) {
                         $scope.events.on(name, handler);
                         return this;
                     }
                 };
             };
 
-            this.registerTagItem = function() {
+            this.registerTagItem = function () {
                 return {
-                    getOptions: function() {
+                    getOptions: function () {
                         return $scope.options;
                     },
-                    removeTag: function(index) {
+                    removeTag: function (index) {
                         if ($scope.disabled) {
                             return;
                         }
@@ -232,7 +254,7 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                 };
             };
         },
-        link: function(scope, element, attrs, ngModelCtrl) {
+        link: function (scope, element, attrs, ngModelCtrl) {
             var hotkeys = [KEYS.enter, KEYS.comma, KEYS.space, KEYS.backspace, KEYS.delete, KEYS.left, KEYS.right],
                 tagList = scope.tagList,
                 events = scope.events,
@@ -241,51 +263,51 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                 validationOptions = ['minTags', 'maxTags', 'allowLeftoverText'],
                 setElementValidity;
 
-            setElementValidity = function() {
+            setElementValidity = function () {
                 ngModelCtrl.$setValidity('maxTags', scope.tags.length <= options.maxTags);
                 ngModelCtrl.$setValidity('minTags', scope.tags.length >= options.minTags);
                 ngModelCtrl.$setValidity('leftoverText', scope.hasFocus || options.allowLeftoverText ? true : !scope.newTag.text);
             };
 
-            ngModelCtrl.$isEmpty = function(value) {
+            ngModelCtrl.$isEmpty = function (value) {
                 return !value || !value.length;
             };
 
             scope.newTag = {
                 text: '',
                 invalid: null,
-                setText: function(value) {
+                setText: function (value) {
                     this.text = value;
                     events.trigger('input-change', value);
                 }
             };
 
-            scope.track = function(tag) {
+            scope.track = function (tag) {
                 return tag[options.keyProperty || options.displayProperty];
             };
 
-            scope.$watch('tags', function(value) {
+            scope.$watch('tags', function (value) {
                 scope.tags = tiUtil.makeObjectArray(value, options.displayProperty);
                 tagList.items = scope.tags;
             });
 
-            scope.$watch('tags.length', function() {
+            scope.$watch('tags.length', function () {
                 setElementValidity();
             });
 
-            attrs.$observe('disabled', function(value) {
+            attrs.$observe('disabled', function (value) {
                 scope.disabled = value;
             });
 
             scope.eventHandlers = {
                 input: {
-                    change: function(text) {
+                    change: function (text) {
                         events.trigger('input-change', text);
                     },
-                    keydown: function($event) {
+                    keydown: function ($event) {
                         events.trigger('input-keydown', $event);
                     },
-                    focus: function() {
+                    focus: function () {
                         if (scope.hasFocus) {
                             return;
                         }
@@ -293,8 +315,8 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                         scope.hasFocus = true;
                         events.trigger('input-focus');
                     },
-                    blur: function() {
-                        $timeout(function() {
+                    blur: function () {
+                        $timeout(function () {
                             var activeElement = $document.prop('activeElement'),
                                 lostFocusToBrowserWindow = activeElement === input[0],
                                 lostFocusToChildElement = element[0].contains(activeElement);
@@ -305,8 +327,8 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                             }
                         });
                     },
-                    paste: function($event) {
-                        $event.getTextData = function() {
+                    paste: function ($event) {
+                        $event.getTextData = function () {
                             var clipboardData = $event.clipboardData || ($event.originalEvent && $event.originalEvent.clipboardData);
                             return clipboardData ? clipboardData.getData('text/plain') : $window.clipboardData.getData('Text');
                         };
@@ -314,7 +336,7 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                     }
                 },
                 host: {
-                    click: function() {
+                    click: function () {
                         if (scope.disabled) {
                             return;
                         }
@@ -327,38 +349,39 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                 .on('tag-added', scope.onTagAdded)
                 .on('invalid-tag', scope.onInvalidTag)
                 .on('tag-removed', scope.onTagRemoved)
-                .on('tag-added', function() {
+                .on('tag-clicked', scope.onTagClicked)
+                .on('tag-added', function () {
                     scope.newTag.setText('');
                 })
-                .on('tag-added tag-removed', function() {
+                .on('tag-added tag-removed', function () {
                     // Sets the element to its dirty state
                     // In Angular 1.3 this will be replaced with $setDirty.
                     ngModelCtrl.$setViewValue(scope.tags);
                 })
-                .on('invalid-tag', function() {
+                .on('invalid-tag', function () {
                     scope.newTag.invalid = true;
                 })
-                .on('option-change', function(e) {
+                .on('option-change', function (e) {
                     if (validationOptions.indexOf(e.name) !== -1) {
                         setElementValidity();
                     }
                 })
-                .on('input-change', function() {
+                .on('input-change', function () {
                     tagList.clearSelection();
                     scope.newTag.invalid = null;
                 })
-                .on('input-focus', function() {
+                .on('input-focus', function () {
                     element.triggerHandler('focus');
                     ngModelCtrl.$setValidity('leftoverText', true);
                 })
-                .on('input-blur', function() {
+                .on('input-blur', function () {
                     if (options.addOnBlur && !options.addFromAutocompleteOnly) {
                         tagList.addText(scope.newTag.text);
                     }
                     element.triggerHandler('blur');
                     setElementValidity();
                 })
-                .on('input-keydown', function(event) {
+                .on('input-keydown', function (event) {
                     var key = event.keyCode,
                         isModifier = event.shiftKey || event.altKey || event.ctrlKey || event.metaKey,
                         addKeys = {},
@@ -406,13 +429,13 @@ tagsInput.directive('tagsInput', function($timeout, $document, $window, tagsInpu
                         event.preventDefault();
                     }
                 })
-                .on('input-paste', function(event) {
+                .on('input-paste', function (event) {
                     if (options.addOnPaste) {
                         var data = event.getTextData();
                         var tags = data.split(options.pasteSplitPattern);
 
                         if (tags.length > 1) {
-                            tags.forEach(function(tag) {
+                            tags.forEach(function (tag) {
                                 tagList.addText(tag);
                             });
                             event.preventDefault();
