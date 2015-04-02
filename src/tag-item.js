@@ -24,6 +24,11 @@ tagsInput.directive('tiTagItem', function(tiUtil) {
             scope.$getDisplayText = function() {
                 return tiUtil.safeToString(scope.data[options.displayProperty]);
             };
+            
+            scope.$tagClick = function () {
+                tagsInput.tagClick(scope.$index);
+            };
+
             scope.$removeTag = function() {
                 tagsInput.removeTag(scope.$index);
             };

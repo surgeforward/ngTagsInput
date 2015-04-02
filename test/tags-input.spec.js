@@ -50,6 +50,10 @@ describe('tags-input directive', function() {
         return getTags().eq(index);
     }
 
+    function getTagSpan(index) {
+        return getTag(index).find('ti-tag-item > ng-include > span');
+    }
+
     function getTagText(index) {
         return getTag(index).find('ti-tag-item > ng-include > span').html();
     }
@@ -186,13 +190,14 @@ describe('tags-input directive', function() {
         it('invokes a click event when a tag is clicked', function() {
             // Arrange
             $scope.tags = generateTags(3);
-            $scope.setClickedTag = function(tag) {
+            $scope.setClickedTag = function (tag) {                
                 $scope.clickedTag = tag;
             };
+                
             compile('on-tag-clicked="setClickedTag($tag)"');
 
             // Act
-            getTag(1).click();
+            getTagSpan(1).click();
 
             // Assert
             expect($scope.clickedTag).toEqual({ text: 'Tag2' });

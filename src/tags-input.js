@@ -100,9 +100,14 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
 
         self.remove = function (index, event) {
             if (event) { event.stopPropagation(); }
-            var tag = self.items.splice(index, 1)[0];
-            events.trigger('tag-removed', { $tag: tag });
-            return tag;
+            var tag = self.items[index];
+
+            if (onTagRemoving({ $tag: tag })) {
+                self.items.splice(index, 1);
+                self.clearSelection();
+                events.trigger('tag-removed', { $tag: tag });
+                return tag;
+            }
         };
       
         self.select = function (index) {
@@ -135,6 +140,7 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
         };
 
         self.clearSelection();
+
         self.tagClick = function (index) {
             var tag = self.items[index];
             events.trigger('tag-clicked', { $tag: tag });
@@ -231,6 +237,12 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
                             return;
                         }
                         $scope.tagList.remove(index);
+                    },
+                    tagClick: function (index) {
+                        if ($scope.disabled) {
+                            return;
+                        }
+                        $scope.tagList.tagClick(index);
                     }
                 };
             };

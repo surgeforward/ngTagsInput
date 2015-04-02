@@ -23,7 +23,7 @@
 </head>
 
 <body ng-controller="Ctrl">
-  <tags-input ng-model="tags" add-on-blur="false" ng-focus="focus()" ng-blur="blur()" add-on-paste="true" paste-split-pattern="[,;|]" spellcheck="false" display-property="name" template="tag-template">
+  <tags-input ng-model="tags" add-on-blur="false" ng-focus="focus()" ng-blur="blur()" add-on-paste="true" paste-split-pattern="[,;|]" spellcheck="false" display-property="name" on-tag-clicked="click()" template="tag-template">
       <auto-complete source="loadItems($query)" min-length="1" load-on-down-arrow="true" load-on-focus="true" load-on-empty="true" template="autocomplete-template"></auto-complete>
   </tags-input>
 
@@ -32,7 +32,7 @@
       <img ng-src="{{data.picture}}" width="20" height="20" style="vertical-align: middle"/>
     </div>
     <div style="float: left; padding-left: 2px">
-      <span>{{$getDisplayText()}}</span>
+      <span ng-click="$tagClick()">{{$getDisplayText()}}</span>
       <a class="remove-button" ng-click="$removeTag()">&times;</a>
     </div>
   </script>
@@ -107,6 +107,10 @@
 
             $scope.blur = function() {
               console.log('blur');
+            };
+
+            $scope.click = function () {
+                console.log('click');
             };
         })
         .directive('limitTags', function() {
