@@ -8,6 +8,10 @@
 
 Tags input directive for AngularJS. Check out the [ngTagsInput website](http://mbenford.github.io/ngTagsInput) for more information.
 
+## Why this fork?
+  -  **on-tag-clicked** attribute that passes clicked tag to your event handler
+  -  **drag-drop-enabled** attribute that allows reordering of tags (this feature requires [ui-sortable](https://github.com/angular-ui/ui-sortable) which in turn requires jquery-ui)
+
 ## Requirements
 
  - AngularJS 1.2.24+ (v1.3 isn't officially supported yet)
