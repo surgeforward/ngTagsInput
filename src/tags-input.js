@@ -36,6 +36,7 @@
  * @param {boolean=} [addFromAutocompleteOnly=false] Flag indicating that only tags coming from the autocomplete list
  *    will be allowed. When this flag is true, addOnEnter, addOnComma, addOnSpace, and addOnBlur values are ignored.
  * @param {boolean=} [spellcheck=true] Flag indicating whether the browser's spellcheck is enabled for the input field or not.
+ * @param {boolean=} [dragDropEnabled=false] Flag indicating whether to allow drag-drop reordering of tags.  Requires ui-sortable + jquery-ui.
  * @param {expression=} [onTagAdding=NA] Expression to evaluate that will be invoked before adding a new tag. The new
  *    tag is available as $tag. This method must return either true or false. If false, the tag will not be added.
  * @param {expression=} [onTagAdded=NA] Expression to evaluate upon adding a new tag. The new tag is available as $tag.
@@ -46,7 +47,7 @@
  *    available as $tag.
  * @param {expression} onTagClicked Expression to evaluate upon clicking an existing tag. The clicked tag is available as $tag.
  */
-tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInputConfig, tiUtil) {
+tagsInput.directive('tagsInput', function ($timeout, $document, $window, $compile, tagsInputConfig, tiUtil) {
     function TagList(options, events, onTagAdding, onTagRemoving) {
         var self = {}, getTagText, setTagText, tagIsValid;
 
@@ -109,7 +110,7 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
                 return tag;
             }
         };
-      
+
         self.select = function (index) {
             if (index < 0) {
                 index = self.items.length - 1;
@@ -185,6 +186,7 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
                 addOnComma: [Boolean, true],
                 addOnBlur: [Boolean, true],
                 addOnPaste: [Boolean, false],
+                dragDropEnabled: [Boolean, false],
                 pasteSplitPattern: [RegExp, /,/],
                 allowedTagsPattern: [RegExp, /.+/],
                 enableEditingLastTag: [Boolean, false],
@@ -253,6 +255,7 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
                 events = scope.events,
                 options = scope.options,
                 input = element.find('input'),
+                list = element.find('ul'),
                 validationOptions = ['minTags', 'maxTags', 'allowLeftoverText'],
                 setElementValidity;
 
@@ -435,6 +438,12 @@ tagsInput.directive('tagsInput', function ($timeout, $document, $window, tagsInp
                         }
                     }
                 });
+
+            if (options.dragDropEnabled) {
+                list.attr('ng-model', 'tagList.items');
+                list.attr('ui-sortable', 'true');
+                $compile(list)(scope);
+            }
         }
     };
 });
